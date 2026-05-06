@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>凡塵問道</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@300;400;500;700&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #1a1208;
+    --paper: #f5edd8;
+    --gold: #c9922a;
+    --gold-light: #e8c97a;
+    --red: #8b1a1a;
+    --mist: #d4c9b0;
+    --jade: #3d7a5f;
+    --chapter-bg: #faf3e4;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--paper);
+    color: var(--ink);
+    font-family: 'Noto Serif TC', serif;
+    line-height: 2;
+    min-height: 100vh;
+  }
+
+  /* Decorative noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+
+  .cover {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    overflow: hidden;
+    border-bottom: 3px solid var(--gold);
+  }
+
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse at 20% 50%, rgba(201,146,42,0.08) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 30%, rgba(61,122,95,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 90%, rgba(139,26,26,0.05) 0%, transparent 40%);
+    z-index: 0;
+  }
+
+  .cover-decoration {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .cover-decoration svg {
+    width: 100%; height: 100%;
+    position: absolute;
+    top: 0; left: 0;
+  }
+
+  .cover-content { position: relative; z-index: 1; }
+
+  .cover-subtitle {
+    font-size: 0.9rem;
+    letter-spacing: 0.5em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 2rem;
+    font-weight: 300;
+  }
+
+  .cover-title {
+    font-family: 'Ma Shan Zheng', serif;
+    font-size: clamp(4rem, 12vw, 9rem);
+    color: var(--ink);
+    letter-spacing: 0.15em;
+    line-height: 1.1;
+    text-shadow: 3px 3px 0 rgba(201,146,42,0.2);
+    margin-bottom: 1.5rem;
+  }
+
+  .cover-tagline {
+    font-size: 1.1rem;
+    color: var(--red);
+    letter-spacing: 0.3em;
+    margin-bottom: 3rem;
+    font-weight: 300;
+  }
+
+  .cover-divider {
+    width: 200px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    margin: 0 auto 2rem;
+  }
+
+  .cover-poem {
+    font-size: 1rem;
+    color: #5a4a2a;
+    line-height: 2.5;
+    letter-spacing: 0.1em;
+  }
+
+  /* TOC */
+  .toc {
+    max-width: 700px;
+    margin: 4rem auto;
+    padding: 3rem 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .toc-title {
+    font-family: 'Ma Shan Zheng', serif;
+    font-size: 2.5rem;
+    text-align: center;
+    color: var(--gold);
+    margin-bottom: 2.5rem;
+    letter-spacing: 0.3em;
+  }
+
+  .toc-list { list-style: none; }
+
+  .toc-item {
+    display: flex;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.7rem 0;
+    border-bottom: 1px dashed var(--mist);
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+
+  .toc-item:hover { color: var(--gold); }
+
+  .toc-num {
+    font-size: 0.8rem;
+    color: var(--gold);
+    min-width: 2rem;
+    letter-spacing: 0.1em;
+  }
+
+  .toc-dots { flex: 1; border-bottom: 1px dotted var(--mist); margin-bottom: 4px; }
+
+  .toc-name { font-size: 1.05rem; letter-spacing: 0.08em; }
+
+  /* Chapters */
+  .chapters-container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 6rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .chapter {
+    margin-bottom: 5rem;
+    padding: 3rem 3.5rem;
+    background: var(--chapter-bg);
+    border: 1px solid var(--mist);
+    border-left: 4px solid var(--gold);
+    box-shadow: 4px 4px 24px rgba(0,0,0,0.05);
+    position: relative;
+    scroll-margin-top: 2rem;
+  }
+
+  .chapter::before {
+    content: attr(data-num);
+    font-family: 'Ma Shan Zheng', serif;
+    font-size: 8rem;
+    color: rgba(201,146,42,0.06);
+    position: absolute;
+    top: 0.5rem;
+    right: 1.5rem;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .chapter-header { margin-bottom: 2.5rem; }
+
+  .chapter-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.4em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .chapter-title {
+    font-family: 'Ma Shan Zheng', serif;
+    font-size: 2rem;
+    letter-spacing: 0.2em;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+
+  .chapter-divider {
+    width: 60px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+    margin-top: 1rem;
+  }
+
+  .chapter-body {
+    font-size: 1.05rem;
+    line-height: 2.1;
+    color: #2a1e0e;
+  }
+
+  .chapter-body p {
+    margin-bottom: 1.4em;
+    text-indent: 2em;
+  }
+
+  .chapter-body p:first-child::first-letter {
+    font-family: 'Ma Shan Zheng', serif;
+    font-size: 3.5em;
+    float: left;
+    line-height: 0.75;
+    margin: 0.1em 0.1em 0 0;
+    color: var(--gold);
+  }
+
+  .dialogue {
+    color: var(--red);
+    font-style: normal;
+  }
+
+  .scene-break {
+    text-align: center;
+    color: var(--gold);
+    letter-spacing: 0.5em;
+    margin: 2em 0;
+    font-size: 0.9rem;
+  }
+
+  .chapter-end {
+    text-align: right;
+    margin-top: 2rem;
+    font-size: 0.8rem;
+    color: var(--mist);
+    letter-spacing: 0.2em;
+  }
+
+  /* Scroll to top */
+  .back-top {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    width: 44px; height: 44px;
+    background: var(--gold);
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.2);
+    transition: transform 0.2s;
+    z-index: 99;
+    opacity: 0;
+    pointer-events: none;
+    font-family: serif;
+  }
+
+  .back-top.visible { opacity: 1; pointer-events: all; }
+  .back-top:hover { transform: translateY(-3px); }
+
+  @media (max-width: 600px) {
+    .chapter { padding: 2rem 1.5rem; }
+    .cover-title { font-size: 4.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Cover -->
+<div class="cover">
+  <div class="cover-decoration">
+    <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#c9922a" stop-opacity="0.12"/>
+          <stop offset="100%" stop-color="#c9922a" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <!-- Mountain silhouettes -->
+      <polygon points="0,800 180,420 360,800" fill="rgba(61,122,95,0.06)"/>
+      <polygon points="100,800 350,300 600,800" fill="rgba(61,122,95,0.04)"/>
+      <polygon points="600,800 850,250 1100,800" fill="rgba(61,122,95,0.05)"/>
+      <polygon points="900,800 1100,350 1200,800" fill="rgba(61,122,95,0.04)"/>
+      <!-- Moon -->
+      <circle cx="950" cy="130" r="80" fill="rgba(201,146,42,0.08)" stroke="rgba(201,146,42,0.15)" stroke-width="1"/>
+      <circle cx="950" cy="130" r="60" fill="rgba(201,146,42,0.05)"/>
+      <!-- Stars -->
+      <circle cx="200" cy="80" r="1.5" fill="rgba(201,146,42,0.4)"/>
+      <circle cx="450" cy="50" r="1" fill="rgba(201,146,42,0.3)"/>
+      <circle cx="680" cy="100" r="1.5" fill="rgba(201,146,42,0.35)"/>
+      <circle cx="120" cy="200" r="1" fill="rgba(201,146,42,0.25)"/>
+      <circle cx="800" cy="60" r="2" fill="rgba(201,146,42,0.3)"/>
+      <circle cx="1050" cy="250" r="1.5" fill="rgba(201,146,42,0.2)"/>
+      <!-- Clouds -->
+      <ellipse cx="300" cy="350" rx="120" ry="30" fill="rgba(212,201,176,0.15)"/>
+      <ellipse cx="800" cy="400" rx="150" ry="25" fill="rgba(212,201,176,0.12)"/>
+    </svg>
+  </div>
+  <div class="cover-content">
+    <p class="cover-subtitle">仙俠長篇小說</p>
+    <h1 class="cover-title">凡塵問道</h1>
+    <p class="cover-tagline">一介凡人，踏破虛空，問鼎長生</p>
+    <div class="cover-divider"></div>
+    <div class="cover-poem">
+      萬丈紅塵埋俗骨<br>
+      一朝得悟破蒼穹<br>
+      問道長生非癡念<br>
+      凡心淬火化真龍
+    </div>
+  </div>
+</div>
+
+<!-- TOC -->
+<nav class="toc">
+  <h2 class="toc-title">目　錄</h2>
+  <ul class="toc-list">
+    <li class="toc-item" onclick="scrollTo('ch1')"><span class="toc-num">第一章</span><span class="toc-name">青石鎮的藥童</span><span class="toc-dots"></span></li>
+    <li class="toc-item" onclick="scrollTo('ch2')"><span class="toc-num">第二章</span><span class="toc-name">古井旁的老人</span><span class="toc-dots"></span></li>
+    <li class="toc-item" onclick="scrollTo('ch3')"><span class="toc-num">第三章</span><span class="toc-name">玄息訣的奧秘</span><span class="toc-dots"></span></li>
+    <li class="toc-item" onclick="scrollTo('ch4')"><span class="toc-num">第四章</span><span class="toc-name">初窺靈氣之門</span><span class="toc-dots"></span></li>
+    <li class="toc-item" onclick="scrollTo('ch5')"><span class="toc-num">第五章</span><span class="toc-name">山中磨難</span><span class="toc-dots"></span></li>
+    <li class="toc-item" onclick="scrollTo('ch6')"><span class="toc-num">第六章</span><span class="toc-name">靈根覺醒</span><span class="toc-dots"></span></li>
+    <li class="toc-item" onclick="scrollTo('ch7')"><span class="toc-num">第七章</span><span class="toc-name">青雲宗的試煉</span><span class="toc-dots"></span></li>
+    <li class="toc-item" onclick="scrollTo('ch8')"><span class="toc-num">第八章</span><span class="toc-name">宗門風雨</span><span class="toc-dots"></span></li>
+    <li class="toc-item" onclick="scrollTo('ch9')"><span class="toc-num">第九章</span><span class="toc-name">築基之路</span><span class="toc-dots"></span></li>
+    <li class="toc-item" onclick="scrollTo('ch10')"><span class="toc-num">第十章</span><span class="toc-name">破境而出</span><span class="toc-dots"></span></li>
+  </ul>
+</nav>
+
+<!-- Chapters -->
+<main class="chapters-container">
+
+  <!-- Chapter 1 -->
+  <article class="chapter" id="ch1" data-num="一">
+    <div class="chapter-header">
+      <p class="chapter-label">第一章</p>
+      <h2 class="chapter-title">青石鎮的藥童</h2>
+      <div class="chapter-divider"></div>
+    </div>
+    <div class="chapter-body">
+      <p>青石鎮坐落在雲嶺山脈南麓，是一個不起眼的小鎮。鎮子四面環山，溪流穿鎮而過，常年霧靄繚繞，宛若仙境，卻不過是方圓百里最窮苦的地方。鎮上住著三百餘戶人家，多以採藥、種田為生，日出而作，日落而息，世世代代，少有變化。</p>
+      <p>林塵就在這樣的地方長大。</p>
+      <p>他是鎮上唯一一家藥鋪——青松堂的藥童。說是藥童，其實不過是個雜役，掃地、劈柴、晾曬藥材、研磨草藥，什麼都做，就連掌柜家裡的豬圈也要他清掃。他今年十六歲，父母在他五歲那年便因一場大病相繼離世，從此跟著遠房叔父在青石鎮討生活。叔父性情暴戾，嗜酒如命，早在三年前便醉死在了鎮外的山溝裡，留下林塵一人，就此孤身於世。</p>
+      <p>掌柜王德明看他孤苦伶仃，手腳勤快，便收留了他在藥鋪幹活，換口飯吃。沒有工錢，沒有前途，但至少有一頓飽飯，有個屋簷可以遮風擋雨。</p>
+      <p>林塵生得眉目清秀，雖然衣衫破舊，身形消瘦，卻有一雙格外靈動的眼睛，黑白分明，像是深潭裡倒映的星光。王掌柜偶爾也誇他，說這孩子聰明，學什麼都快，只可惜命不好，若是生在富貴人家，說不定能讀幾本書，考個功名。林塵每次聽到這話，只是低頭微笑，不多言語。</p>
+      <p>他從不抱怨命苦。在他心裡，有一件事比吃飽穿暖更重要——那就是看書。</p>
+      <p>青松堂存有一些陳年的醫書、藥典，王掌柜識字不多，這些書對他而言不過是擺設。林塵卻視之如寶。每到夜深人靜，他便就著一盞油燈，一字一句地研讀那些泛黃的典籍。日積月累，他對草藥的性味、功效、炮製之法了解得比王掌柜更為透徹。有時客人來問藥，王掌柜支支吾吾說不上來，還是林塵在一旁輕聲提醒，方才應付過去。</p>
+      <p>那些醫書讀完之後，林塵開始留意鎮上偶爾流傳的奇書異典。有一年，一個走南闖北的行腳商人在鎮上停留，喝酒時喝多了，口中胡言亂語，說什麼「世間有仙，居於高山，壽逾千年，能移山倒海」。鎮上的人哄堂大笑，罵他喝醉了說胡話，唯有林塵默默坐在角落，把那些話一字不漏地記在心裡。</p>
+      <p>仙。那個字在他腦海中生了根。</p>
+      <p>從那天起，林塵在藥材山中採藥時，總會多留意幾眼那些形態奇特的花草，翻閱那些藥典時，也會特別留心有關「奇效」、「延年益壽」的記載。他說不清這算不算是一種執念，但那顆種子已經悄悄在心底發了芽，等待某個時機，破土而出。</p>
+      <p>那個時機，在他十六歲的秋天來臨了。</p>
+      <div class="chapter-end">※　※　※</div>
+    </div>
+  </article>
+
+  <!-- Chapter 2 -->
+  <article class="chapter" id="ch2" data-num="二">
+    <div class="chapter-header">
+      <p class="chapter-label">第二章</p>
+      <h2 class="chapter-title">古井旁的老人</h2>
+      <div class="chapter-divider"></div>
+    </div>
+    <div class="chapter-body">
+      <p>那是一個深秋的清晨，霜重露濃，青石鎮的山路上覆著一層薄薄的白霧。林塵背著竹簍，手提藥鋤，踩著濕滑的石板路，往鎮後的雲嶺山走去。王掌柜囑咐他去採一批過冬用的草藥，說是這個季節的黃精和天冬最是飽滿，藥力最足。</p>
+      <p>林塵進了山，沿著熟悉的山路往上走。這條路他已走了十幾年，哪裡有陡坡，哪裡有暗石，閉著眼睛也不會走錯。然而今天，他卻在一個岔路口停了下來。</p>
+      <p>右邊是熟悉的採藥小路，左邊則是一條長滿苔蘚、幾乎被荊棘封死的羊腸小道。那條路他從未走過，鎮上的老人也叮囑過，說那條路往裡走沒有出路，而且常有野獸出沒，輕易不要涉足。</p>
+      <p>但今天，林塵不知為何，鬼使神差地轉向左邊。</p>
+      <p>他撥開荊棘，鑽過一片密林，走了大約半個時辰，腳下的泥路漸漸變成了青石板，越來越規整，最後通向一片空地。空地中央有一口古井，青石砌成，井沿上刻著已辨不清的紋路，周圍長滿了叫不出名字的草藥。林塵眼前一亮——那些草藥他在典籍裡見過圖示，但從未在採藥時真正遇到，有幾種甚至是極為珍稀的靈植，王掌柜說那種東西一兩值三十兩銀子。</p>
+      <p>他正欲上前採摘，耳邊忽然傳來一道蒼老的聲音：<span class="dialogue">「孩子，且慢。」</span></p>
+      <p>林塵猛地轉身，這才發現古井旁坐著一個老人。老人身著一件洗得發白的灰布長袍，頭髮和鬍鬚皆白如霜雪，但臉色卻紅潤異常，眼神更是深邃如淵，讓人一看便覺得深不可測。他盤腿坐在井沿旁的石墩上，手中捧著一個粗陶茶碗，神情悠然，彷彿已在此處坐了許多年。</p>
+      <p>林塵沒有被嚇到，只是微微一愣，隨即拱手行禮：<span class="dialogue">「老人家，晚輩失禮，沒有注意到您在此。」</span></p>
+      <p>老人打量了他一眼，嘴角微微上揚：<span class="dialogue">「你不怕老頭我？」</span></p>
+      <p><span class="dialogue">「怕什麼？」</span>林塵誠實地說，<span class="dialogue">「您看起來不像壞人。」</span></p>
+      <p>老人哈哈一笑，笑聲爽朗，在寂靜的山林間迴響。他招了招手：<span class="dialogue">「過來坐。老頭問你幾個問題，你若答得好，這些草藥就都給你帶走。」</span></p>
+      <p>林塵略作猶豫，還是走了過去，在老人對面蹲下，認真地望著他。</p>
+      <p>老人問：<span class="dialogue">「你可知道這井中之水有何特別？」</span></p>
+      <p>林塵看了看古井，走近俯身望去。井水清澈見底，隱約透著一絲淡藍色的光芒，而井底似乎有什麼東西在緩慢流動，像是雲霧，又像是水流，說不清道不明。他想了片刻，說：<span class="dialogue">「這水裡有靈氣。」</span></p>
+      <p>老人的眼睛驟然一亮。</p>
+      <p><span class="dialogue">「哦？你是如何看出來的？」</span></p>
+      <p>林塵指著井沿上的苔蘚：<span class="dialogue">「普通的井，周圍的苔蘚是深綠色的，但這口井的苔蘚呈翠色，而且長得出奇地旺盛。我在藥書上讀過，靈植喜靈氣，這周圍的草藥全都是靈性植物，能聚集在同一處，說明這地方的地氣不尋常。再者，這井水裡有一種很淡的清甜氣味，不是普通的山泉水。」</span></p>
+      <p>老人沉默片刻，緩緩點了點頭，臉上的笑意更深了。他放下茶碗，站起身來，身形雖然消瘦，卻挺拔如松，氣度沉穩，讓人感覺到一種難以言說的威壓，彷彿山嶽一般。</p>
+      <p><span class="dialogue">「孩子，你叫什麼名字？」</span></p>
+      <p><span class="dialogue">「林塵。」</span></p>
+      <p><span class="dialogue">「林塵……」</span>老人低聲重複這個名字，似乎在咀嚼其中的意味，<span class="dialogue">「塵埃之林，倒是個有意思的名字。你的父母可還在？」</span></p>
+      <p>林塵搖頭：<span class="dialogue">「早年便去世了。」</span></p>
+      <p>老人點點頭，沒有多說，轉而問道：<span class="dialogue">「你可曾想過，這世間除了柴米油鹽，還有另一種活法？」</span></p>
+      <p>林塵沉默了片刻，眼中閃過一絲光芒，緩緩說道：<span class="dialogue">「修仙。」</span></p>
+      <p>老人盯著他看了很久，然後從袖中取出一本薄薄的書冊，封面上三個篆字，林塵努力辨認，唸出聲：<span class="dialogue">「玄……息……訣？」</span></p>
+      <p><span class="dialogue">「這本書，」</span>老人說，<span class="dialogue">「是老夫送你的。但有一事要說清楚——修道之路，不比塵世容易。你日後所遇的苦難，千百倍於今日。你，可有這個心？」</span></p>
+      <p>林塵雙手接過那本書冊，低頭看了一眼，再抬起頭，目光堅定如鐵。</p>
+      <p><span class="dialogue">「有。」</span></p>
+      <div class="chapter-end">※　※　※</div>
+    </div>
+  </article>
+
+  <!-- Chapter 3 -->
+  <article class="chapter" id="ch3" data-num="三">
+    <div class="chapter-header">
+      <p class="chapter-label">第三章</p>
+      <h2 class="chapter-title">玄息訣的奧秘</h2>
+      <div class="chapter-divider"></div>
+    </div>
+    <div class="chapter-body">
+      <p>林塵回到青松堂，把採來的草藥交給王掌柜，吃過晚飯，便一頭鑽進自己那間小小的柴房，點燃油燈，將那本《玄息訣》攤開在膝上，一字一句地研讀起來。</p>
+      <p>書冊不厚，只有薄薄的三十幾頁，但每一頁都密密麻麻地寫滿了蠅頭小楷，紙張泛黃，墨色卻依然清晰，顯然是保存得極好的古籍。封面內頁，有一行娟秀的小字：「此訣專為凡人入門而作，無靈根者亦可修習，然成就有限，全憑天資與緣法。」</p>
+      <p>林塵看到「無靈根者亦可修習」這幾個字，心中一動。他當然知道修仙的門檻——靈根，那是修仙者吐納天地靈氣的根基，生來便有或無，無法後天獲得。沒有靈根，縱然修行一生，也不過在練氣期徘徊，甚至連練氣期都踏不進去。然而這本書卻說，無靈根者也可修習……</p>
+      <p>他繼續往下看。《玄息訣》分為三部分：第一部分叫「觀息」，是最基礎的功法，教人如何以意念感知自身氣息的流動，進而與天地之氣溝通；第二部分叫「引息」，是在觀息有成之後，學習如何引導外界靈氣進入體內，沿著特定的路線在體內運行；第三部分叫「煉息」，則是將吸納的靈氣淬煉成丹田中的真氣，鑄造修仙者最基礎的底蘊。</p>
+      <p>書中對每一步驟都有詳盡的說明，連每個細節的注意事項都一一列明，顯然是一位深諳教學之道的高人所撰。然而有幾個段落，林塵讀了好幾遍，依然似懂非懂。有一段說：「觀息之時，需摒棄雜念，使心如止水，方可感知息之本源。凡人難在心靜，蓋因塵念太重，如霧蔽日，靈氣雖在，難以感知。」</p>
+      <p>林塵放下書，在燈火下沉思良久，想起老人說的「無靈根者亦可修習」——難道修仙不只靠靈根，還有別的途徑？他有些困惑，但也有些隱隱的興奮。他從不覺得自己是一個安於現狀的人，只是從來沒有機會改變。如今，機會就在眼前。</p>
+      <p>他決定先試試「觀息」。</p>
+      <p>按照書中所述，他盤腿坐在草蓆上，雙手自然放在膝上，閉目，緩緩呼吸，試圖感知自己體內氣息的流動。剛開始，他的腦子裡一片混亂——王掌柜今天唸叨的藥材、明天要幹的活兒、那個老人奇怪的眼神……各種念頭像蒼蠅一樣嗡嗡作響，驅之不散。</p>
+      <p>他沮喪地睜開眼，重新看書。書中說：「靜心之法，非強行壓制雜念，而是以意念輕輕觀察念頭的起伏，如旁觀者，不加評判，念頭自起自滅，心自靜矣。」</p>
+      <p>這讓他想起了小時候，獨自坐在山間看雲的感覺。那時他什麼都不想，只是靜靜地看著白雲變幻，看著鳥兒掠過，心中有一種說不出的平靜。他重新閉上眼睛，試著用那種感覺去「看」自己的念頭。</p>
+      <p>漸漸地，那些雜念開始安靜下來。</p>
+      <p>然後，他感受到了某種東西。</p>
+      <p>那是一種極其細微的感覺，像是耳邊有一陣幾乎聽不見的風聲，又像是皮膚上有一種若有若無的輕顫。那種感覺從指尖傳來，沿著手臂緩緩向上，進入胸腔，再向下沉入小腹。那感覺太輕、太淡，林塵一開始甚至以為是自己的幻覺，但那種觸感實實在在，不是想象出來的。</p>
+      <p>他沒有去追那感覺，只是靜靜地感受著，一如書中所言，做一個旁觀者。</p>
+      <p>不知過了多久，那種感覺消失了，林塵緩緩睜開眼，油燈已燃去了一大截。窗外傳來雞鳴，竟然已經到了黎明時分。他坐了整整一夜，卻絲毫不覺疲倦，反而感到全身輕盈，說不出的舒暢。</p>
+      <p>林塵看著手心，什麼都看不出來，只是從心底湧上一股莫名的確信：</p>
+      <p>他走上了正確的道路。</p>
+      <div class="chapter-end">※　※　※</div>
+    </div>
+  </article>
+
+  <!-- Chapter 4 -->
+  <article class="chapter" id="ch4" data-num="四">
+    <div class="chapter-header">
+      <p class="chapter-label">第四章</p>
+      <h2 class="chapter-title">初窺靈氣之門</h2>
+      <div class="chapter-divider"></div>
+    </div>
+    <div class="chapter-body">
+      <p>此後一個月，林塵每天照常在青松堂幹活，每到深夜便打坐修行。他性格沉穩，不急不躁，一步一個腳印，把《玄息訣》中的每一個細節都仔細揣摩，不敢有絲毫馬虎。</p>
+      <p>「觀息」的功夫，他在第三天便能做到心靜如水，感知到體內氣息的流動。到第十天，他已能清楚感受到呼吸時有一絲絲極細微的天地靈氣隨之進入體內，如同細沙穿過指縫，大多數從他身體流過，只留下極少的一點。</p>
+      <p>到第二十天，他開始嘗試「引息」。這一步比「觀息」難了許多。書中說，引息需要在感知靈氣的同時，以意念輕輕引導那些進入體內的靈氣，使之沿著「任督二脈」的路線在體內循環一周，再沉入丹田。這個過程就像是用一根細線串針，靈氣本身沒有形態，意念稍微重一點，它便散開；意念太輕，又根本無法引導。</p>
+      <p>林塵在這一步卡了足足七天。那七天，他每晚都靜坐到天明，試了又試，失敗了又試，眼下的青黑越來越深，王掌柜還以為他偷偷在外面惹了什麼事，問了他好幾回，都被他含糊地應付過去。</p>
+      <p>終於在第二十八天的深夜，一切改變了。</p>
+      <p>那一夜，窗外下著秋雨，淅淅瀝瀝地打在瓦片上。林塵盤坐在草蓆上，意識沉入體內，再一次嘗試引導那縷若有若無的靈氣。這一次，他沒有刻意去控制，而是放鬆下來，把意念變得輕盈，像是柔風吹過水面，而不是用手去撥弄。</p>
+      <p>那縷靈氣微微一動。</p>
+      <p>林塵心中大喜，但立刻強壓下那份激動，保持平靜，繼續以意念輕柔地引導。靈氣像一條不情願的小魚，緩緩沿著他意念所指的路線移動，從尾閭穴沿脊柱上行，過夾脊，越玉枕，到頭頂百會，再沿任脈下行，穿膻中，過神闕，最後沉入下腹的丹田。</p>
+      <p>那一刻，林塵的丹田處傳來一陣溫熱，像是有什麼東西在那裡微微顫動，說不出的舒適。那種感覺只持續了片刻便消散了，但他知道，那是靈氣留下的痕跡。</p>
+      <p>他成功了。</p>
+      <p>林塵緩緩睜開眼，發現自己的手掌竟然微微發光——那是一絲幾乎肉眼難辨的淡藍色光芒，轉瞬即逝。他怔怔地看著自己的雙手，半晌說不出話來。</p>
+      <p>從這一夜起，他每次靜坐引氣，丹田中積累的靈氣便越來越多。雖然增長極為緩慢，但那種實實在在的進步，讓他每天都充滿了力量。他的身體也悄悄發生著變化——體質增強了，以往一天採藥下來，夜裡腿腳酸痛，如今幾乎感覺不到，而且眼力和耳力也敏銳了許多，有時站在山腰，能清晰地看到遠處山頂的飛鳥。</p>
+      <p>一天，他再次上山採藥，繞道去了那片古井旁的空地，想找那位老人道謝，或者請教更多修行之法。然而空地上空空如也，古井在，草藥在，就是老人不見了。林塵在周圍繞了好幾圈，連老人的氣息都找不到半分，彷彿那日的相遇只是一場夢。</p>
+      <p>他在古井旁站了很久，最後深深鞠了一躬，向著空氣中說：<span class="dialogue">「多謝老前輩。晚輩定不負所托。」</span></p>
+      <p>山風吹過，帶來一陣淡淡的草藥清香，彷彿在應答。</p>
+      <div class="chapter-end">※　※　※</div>
+    </div>
+  </article>
+
+  <!-- Chapter 5 -->
+  <article class="chapter" id="ch5" data-num="五">
+    <div class="chapter-header">
+      <p class="chapter-label">第五章</p>
+      <h2 class="chapter-title">山中磨難</h2>
+      <div class="chapter-divider"></div>
+    </div>
+    <div class="chapter-body">
+      <p>進入冬季，雲嶺山被白雪覆蓋，採藥的機會大為減少，林塵在藥鋪的活計也少了許多。多出來的時間，他幾乎全用在了修行上。日以繼夜的努力讓他的功力穩步增長，三個月後，他丹田中的靈氣已積累到一個可觀的程度，每次運功時，那股溫熱的氣流能在體內循環整整七圈而不散。</p>
+      <p>然而，就在這時，一場意外打亂了他平靜的修行生活。</p>
+      <p>那是一個大雪天，王掌柜收到消息，說是鄰鎮有一批難得的冬藥，須立刻派人去取，否則便被別家搶去。他本想自己去，卻又捨不得在大雪天裡受凍，便指派林塵跑這一趟，說好若能辦成，年底多給他兩個月的飯食。</p>
+      <p>林塵二話不說，背上竹簍，踏上了山路。鄰鎮在雲嶺山北麓，須翻越一段山嶺。平日裡，這段路需要走兩個時辰，但大雪之後，山路難行，光是應付濕滑的石板和沒膝的積雪，便耗去了他大半的精力。</p>
+      <p>快到山頂時，他遭遇了麻煩。</p>
+      <p>一頭巨大的黑熊從林中衝出，攔住了他的去路。那熊足有一人高，體重怕不有三四百斤，冬眠前的最後幾日，正是最為飢餓也最為兇猛的時候。它一聲低吼，熊掌落地，震得積雪飛揚。</p>
+      <p>林塵一顆心沉了下去，手中只有一把藥鋤，根本不是黑熊的對手。他深吸一口氣，本能地運轉體內靈氣，不知道那有什麼用，但在那個慌亂的瞬間，那是他唯一能做的事。</p>
+      <p>靈氣在丹田中翻湧，沿著四肢湧動，林塵感到全身燥熱，力量憑空增加了幾分。他沒有逃跑，逃是跑不掉的，便橫下一條心，大吼一聲，舉起藥鋤，朝著黑熊的鼻樑打去。</p>
+      <p>一人一熊廝打了足足一刻鐘，林塵被熊掌掃中了左肩，整個人打著旋飛了出去，重重撞上一棵松樹，口中腥甜，吐出一口血來。左肩的骨頭不知是否斷了，疼痛讓他幾乎無法動彈。但那頭黑熊的鼻子也被他砸了個正著，淌著血，嗷嗷叫著，似乎也受了傷，在原地繞了幾圈，最終往林子深處跑去。</p>
+      <p>林塵靠著松樹喘氣，全身顫抖，冰冷的雪水浸透了衣衫，一點點帶走他的體溫。他知道自己必須移動，否則就算黑熊不來，寒冷也足以要了他的命。</p>
+      <p>他咬緊牙關，強撐起身子，一手扶著松樹，一步一步往前挪。就在這時，他想起《玄息訣》中有一段記載——靈氣可以用來加速身體的恢復，方法是在受傷部位集中運轉靈氣，以靈氣溫養受損的血肉筋骨。那一段他讀過，但從未嘗試。</p>
+      <p>現在，是嘗試的時候了。</p>
+      <p>他坐在雪地上，忍著劇痛，把丹田中的靈氣緩緩引到左肩，那股熱流觸及受傷之處，林塵幾乎痛得昏厥，但隨即感到一陣難以言喻的舒緩，疼痛並沒有消失，卻彷彿被一層溫暖的東西包裹住了，變得可以承受。他就這樣堅持了半個時辰，靠著靈氣的溫養，傷勢雖未痊癒，卻止住了惡化。</p>
+      <p>他最終平安翻越了山嶺，取到了藥材，帶著一身傷回到青石鎮。王掌柜見他這副狼狽模樣，嚇了一跳，問了許久才弄清緣由，又心疼又後怕，破天荒地給他煎了一碗湯藥，說：<span class="dialogue">「你這孩子，命硬。」</span></p>
+      <p>林塵喝著藥，心中卻想的是另一件事。</p>
+      <p>這一次磨難，讓他深刻地意識到了自己的脆弱，也讓他第一次真切地感受到靈氣在實際中的力量。如果他的修為更深厚一些，那頭黑熊根本傷不到他。從這一天起，他修行的態度更加堅定，也更加虔誠。</p>
+      <p>道路從來不是平坦的，但他不打算退縮。</p>
+      <div class="chapter-end">※　※　※</div>
+    </div>
+  </article>
+
+  <!-- Chapter 6 -->
+  <article class="chapter" id="ch6" data-num="六">
+    <div class="chapter-header">
+      <p class="chapter-label">第六章</p>
+      <h2 class="chapter-title">靈根覺醒</html>
+      <div class="chapter-divider"></div>
+    </div>
+    <div class="chapter-body">
+      <p>傷勢養了半個月，林塵重新站起來時，發現自己的修為竟有了一次不小的突破。那場與黑熊的搏鬥，彷彿是一次極為殘酷的淬煉，把他體內原本鬆散的靈氣凝聚了許多，丹田處的靈氣感覺比之前厚實了一圈，運轉時更加流暢有力。</p>
+      <p>他把這個發現記在了心底。看來，修行不只是在靜坐打坐時才能精進，在極端的壓力和危機之下，身體和意志同樣會發生質的變化。這個認知讓他此後在採藥時，開始刻意尋找艱難的地形和惡劣的條件，以磨礪自身。</p>
+      <p>春天到來，山間積雪消融，萬物復甦，靈氣也比冬日濃郁了許多。林塵在那口古井旁的空地修行，每次打坐，都能感受到從地下湧上來的靈氣水流，密密麻麻地鑽入他的身體。有幾次，他打坐結束，周身竟然覆著一層薄薄的水霧，在晨光中熠熠發光，美得出奇。</p>
+      <p>這一年的三月，在他修行整整半年之後，最關鍵的變化發生了。</p>
+      <p>那是一個清晨，林塵在古井旁打坐，陽光剛剛越過山頂，斜斜地照在他身上。他正在進行「煉息」的功課，試圖將丹田中積累的靈氣進一步凝練，使之更加純粹。突然，他感到丹田深處有什麼東西像是薄冰被陽光照到，發出了一聲輕微的「咔」聲。</p>
+      <p>那一刻，像是什麼東西被打開了。</p>
+      <p>靈氣以前所未有的速度從四面八方湧入他的身體，排山倒海，不可遏制。林塵被那突如其來的衝擊震得臉色蒼白，但他強撐著保持平靜，以《玄息訣》中所學，引導那洶湧的靈氣在體內有序流動，一遍又一遍地衝刷著他的筋脈。</p>
+      <p>那個過程痛苦無比。靈氣在筋脈中奔湧，像是洪水要把那些狹窄的河道撐開，每一次衝擊都讓他感到撕裂般的疼痛，冷汗浸透了衣衫，他卻一動不動，咬緊牙關，讓那些靈氣自行完成它的工作。</p>
+      <p>不知過了多久，那股洶湧的衝勁漸漸平息。林塵緩緩睜開眼，感到全身說不出的虛脫，但與此同時，一種前所未有的清澈感充盈著他的每一根筋脈，就連五感都變得前所未有的敏銳——他能看見遠處山頂的一片樹葉在微風中顫動，能聽見百步之外的流水聲，甚至能隱隱感受到周圍大地的呼吸。</p>
+      <p>他低頭看向自己的手掌，那裡，清晰地呈現著一條淡綠色的脈絡，隨著他的心跳緩緩跳動。</p>
+      <p>林塵呆了片刻，然後想起那本《玄息訣》封面內頁上的一句話：「若修行有成，凡人亦可後天凝聚靈根。靈根者，修仙之基，以靈氣淬煉肉身，久而久之，自生靈性，此謂後天靈根，雖不及先天，然亦可踏上長生之路。」</p>
+      <p>他的後天靈根，覺醒了。</p>
+      <p>那一刻，林塵坐在古井旁，陽光灑在他身上，周圍的花草散發著清香，山風柔和地吹過，他的眼眶悄悄地紅了。不是因為喜悅，而是因為他突然想到了那個死去多年的行腳商人，想到了父親和母親，想到了自己在柴房裡借著油燈讀書的那些夜晚。</p>
+      <p>那些年裡，他不知道自己在等什麼，現在他知道了。</p>
+      <p>他在等這一刻。</p>
+      <div class="chapter-end">※　※　※</div>
+    </div>
+  </article>
+
+  <!-- Chapter 7 -->
+  <article class="chapter" id="ch7" data-num="七">
+    <div class="chapter-header">
+      <p class="chapter-label">第七章</p>
+      <h2 class="chapter-title">青雲宗的試煉</h2>
+      <div class="chapter-divider"></div>
+    </div>
+    <div class="chapter-body">
+      <p>後天靈根覺醒後，林塵的修行速度大幅提升，原本需要一個月才能積累的靈氣，如今只需三五天便能完成。他在《玄息訣》上的進展也從「煉息」的初階，漸漸推進到了中階，丹田中的靈氣從薄薄的霧氣，凝成了一灘清澈的液體，那是練氣期初入門的標誌。</p>
+      <p>就在他修行愈發精進之際，一件大事降臨青石鎮——青雲宗的招募弟子使者來了。</p>
+      <p>青雲宗是雲嶺山脈中聲名最顯赫的修仙門派，據說已有三千年傳承，門中高手如雲，連掌門都是元嬰期的大修士。宗門每隔三年，便會派使者下山，在周圍各鎮招募有靈根資質的少年，帶回宗門培養。能入青雲宗，是無數有志修仙者夢寐以求的事。</p>
+      <p>青石鎮上頓時沸騰了。凡是家中有十四到二十歲子弟的，都爭相帶著孩子前去測試。測試的地點設在鎮中的廣場上，使者是一個三十多歲的中年男子，面如冠玉，身著青色道袍，手中持著一塊拳頭大小的靈石。凡是靠近靈石時靈石發光者，便是有靈根之資，可以進入下一輪的考核。</p>
+      <p>林塵混在人群中，默默地觀察著。他並沒有特別想去的念頭——他知道，自己的靈根是後天凝聚的，不知道能不能通過那塊靈石的檢測。況且，他已年滿十六，在修仙界算是起步稍晚的，宗門未必肯收。</p>
+      <p>然而，命運有時候喜歡開玩笑。</p>
+      <p>鎮上的孩子一個個上前，靈石大多只是微微一亮，或者完全沒有反應。輪到林塵時，他被王掌柜推了一把：<span class="dialogue">「去試試，又不要錢。」</span></p>
+      <p>林塵無奈，走上前去。他的手剛靠近那塊靈石，靈石便猛地大放光明，那光芒衝天而起，足有三丈高，把整個廣場照得如同白晝，把正在跟旁邊人閒聊的使者都嚇了一跳，騰地站起身，難以置信地看著林塵。</p>
+      <p>廣場上一片寂靜，然後炸開了鍋。</p>
+      <p><span class="dialogue">「這是什麼資質？」</span>有人喃喃道。</p>
+      <p>使者快步上前，抓住林塵的手腕，仔細查看，臉上的神情從驚訝變成了凝重，又從凝重變成了一種壓抑的興奮。他低聲問：<span class="dialogue">「你的靈根……是後天凝聚的？」</span></p>
+      <p>林塵點頭：<span class="dialogue">「是。」</span></p>
+      <p>使者沉默片刻，說：<span class="dialogue">「後天靈根能達到這個純度，是罕見的事。你是如何修行的？」</span></p>
+      <p><span class="dialogue">「用一本叫《玄息訣》的功法。」</span></p>
+      <p>使者聞言，神情更加複雜。他站在原地思考了片刻，最終說：<span class="dialogue">「你可願隨我上山，參加青雲宗的正式入門考核？」</span></p>
+      <p>林塵想起那個古井旁的老人，想起那本書，想起那個秋天的清晨。他平靜地看著使者，說：<span class="dialogue">「我願意。」</span></p>
+      <p>入門考核分三關：第一關是靈根測試，他已通過；第二關是在宗門的「試煉峰」上，獨自待滿三天三夜，採摘到指定的靈草，方算通過；第三關是與宗門同齡弟子切磋，展示基本的修為。</p>
+      <p>試煉峰上陰雲密布，靈氣濃郁得幾乎能看見，但危機四伏，靈獸頻繁出沒，山路崎嶇，稍有不慎便是萬丈深淵。林塵帶著簡單的乾糧，獨自踏上了那座山峰。他並不畏懼——那條雪中獨鬥黑熊的山路，早就磨去了他對危險的恐懼。</p>
+      <p>三天後，他全身負傷，卻帶著完整的靈草，平靜地走下了試煉峰。</p>
+      <p>宗門的考官見到他時，沉默了很久，才說了一句話：<span class="dialogue">「通過了。」</span></p>
+      <div class="chapter-end">※　※　※</div>
+    </div>
+  </article>
+
+  <!-- Chapter 8 -->
+  <article class="chapter" id="ch8" data-num="八">
+    <div class="chapter-header">
+      <p class="chapter-label">第八章</p>
+      <h2 class="chapter-title">宗門風雨</h2>
+      <div class="chapter-divider"></div>
+    </div>
+    <div class="chapter-body">
+      <p>進入青雲宗的第一個月，林塵過得並不好。</p>
+      <p>宗門中有數百名弟子，多數都是先天靈根，家世顯赫，從小便跟著名師習修，根基深厚。林塵一個從窮鄉僻壤來的孤兒，靈根是後天凝聚的，修行起點晚，在眾多弟子中，算是最不起眼的存在。加上他沉默寡言，不善交際，在宗門中幾乎沒有朋友。</p>
+      <p>然而更大的問題在於，他成了一些人的眼中釘。</p>
+      <p>青雲宗每隔兩年，都會根據弟子修為進行一次排名，排名前十的弟子，可以獲得宗門額外的修行資源，包括丹藥、功法典籍和秘地修行的資格。林塵入門之初，便被幾個老弟子視為潛在的競爭對手，尤其是一個叫做方玉的弟子——此人先天木靈根，資質上乘，一直穩居宗門前三，極為自負，見林塵靈根光芒之盛，心中便存了不滿。</p>
+      <p>方玉沒有直接動手，但他的手段更讓人難受。他在背地裡散播謠言，說林塵的靈根光芒是假的，不過是身上藏了什麼能感應靈石的寶物；說他是從山野來的乞丐，根本不配進宗門；更說他的修為是虛的，名不副實。這些話在宗門裡傳開，讓一些本就對林塵存疑的弟子對他冷眼相待。</p>
+      <p>林塵聽到這些話，只是沉默。他不去辯解，也不去抗爭，只是每天比任何人都更早起床打坐，比任何人都更晚入睡，把全部精力都放在修行上。</p>
+      <p>有一天，他的指導師父——宗門的一位煉丹長老，叫做顧清河，把他叫到藥田去，讓他給一批靈草施法滋養，這本是最低等的活計，通常留給剛入門的雜役弟子，顧長老卻安排他來做，顯然是存了考驗之意，或者說是輕視。</p>
+      <p>林塵接下了任務，每天在藥田中辛勤勞作。然而，他的藥學底子在這裡派上了用場——他對靈草的習性比宗門中許多弟子都更了解，懂得根據不同靈草的特性調整滋養方式，月餘下來，那批靈草長勢喜人，比往年都好了幾分。</p>
+      <p>顧長老來視察時，愣了許久，然後問：<span class="dialogue">「你懂藥理？」</span></p>
+      <p><span class="dialogue">「略懂一些。」</span></p>
+      <p>顧長老沉默片刻，目光在林塵身上停留了良久，那眼神從最初的漠然，漸漸有了一絲不同的東西。他說：<span class="dialogue">「下個月，宗門丹爐開爐，你來隨我學習煉丹之道。」</span></p>
+      <p>這是一個難得的機會，林塵恭敬行禮：<span class="dialogue">「弟子謹遵師命。」</span></p>
+      <p>而那個散播謠言的方玉，也在那個月的月底，受到了他應得的報應——他在一次外出任務中，因為過於自傲，輕敵冒進，被一頭金翎雕啄瞎了左眼，被抬回宗門時，哭得極為狼狽。宗門的師長只是沉默地為他療傷，沒有多說。</p>
+      <p>林塵路過他的廂房時，停了一下，然後繼續走了過去，沒有說什麼。</p>
+      <p>他知道，修仙路上，自傲是最要命的弱點。他雖然出身低微，但從不會犯這個錯誤。</p>
+      <div class="chapter-end">※　※　※</div>
+    </div>
+  </article>
+
+  <!-- Chapter 9 -->
+  <article class="chapter" id="ch9" data-num="九">
+    <div class="chapter-header">
+      <p class="chapter-label">第九章</p>
+      <h2 class="chapter-title">築基之路</h2>
+      <div class="chapter-divider"></div>
+    </div>
+    <div class="chapter-body">
+      <p>跟著顧清河學習煉丹，是林塵在宗門中的第一個重大轉折。</p>
+      <p>顧長老是宗門中資歷最老的煉丹師之一，手邊有大量珍貴的藥典和煉丹秘籍，而林塵的藥學底子讓他在學習煉丹時如魚得水，進展之快讓顧長老刮目相看。不到半年，他便能獨自煉製一些初級丹藥，品質穩定，出丹率高，偶爾還能出現上品。</p>
+      <p>煉丹不只是一門技藝，更是對修為的極大考驗。每一次控制爐火、引導丹氣、把握時機的過程，都在磨練修士對靈氣的掌控力。林塵在煉丹中，不知不覺地提升著自己的靈氣控制精度，那種細膩的控制感反過來也加速了他在修行上的進步。</p>
+      <p>一年後，他的修為已達到練氣期第七層，在同年入門的弟子中位居前列，就連那些先天靈根的弟子，也有許多落在了他後面。這讓宗門上下對他刮目相看，顧長老更是在一次宗門會議上，公開稱讚他是「難得一見的可造之材」。</p>
+      <p>然而，修行到了練氣期後段，便遭遇了第一個真正意義上的瓶頸——築基。</p>
+      <p>築基，是修仙者從練氣期邁向下一個大境界的關鍵一步。練氣期修士以靈氣充盈筋脈，而築基則是要將丹田中的靈氣凝聚成「金丹之基」，在丹田中建立一個穩固的靈氣核心，使修士的戰力和壽元都發生質的飛躍。這一步，對許多修士而言，是一道難以逾越的天塹，有人在練氣期第九層卡了數十年，終其一生也無緣築基。</p>
+      <p>林塵在練氣期第九層停滯了整整八個月，毫無進展。丹田中的靈氣充盈到了極限，卻始終無法完成那最後的凝聚，像是一顆水滴懸在葉尖，無論風怎麼吹，就是不肯落下。</p>
+      <p>他翻遍了能找到的所有典籍，向顧長老請教，向其他師兄詢問，得到的答案各不相同，有人說要靜心，有人說要用特定的丹藥輔助，有人說要在靈氣最濃郁的地方修行。他都嘗試了，效果甚微。</p>
+      <p>那段時間，他的心情前所未有地低沉。</p>
+      <p>有一天夜裡，他爬上宗門後山的最高峰，坐在山頂，望著漫天星斗，想起了那個古井旁的老人。他想，老人會怎麼說？</p>
+      <p>他閉上眼睛，試著回憶那日的一切。老人的表情，老人的眼神，老人說的每一句話。然後，他想起了一個細節：老人在把書遞給他之前，曾說過這樣一句話：<span class="dialogue">「修道之路，最難的不是提升修為，而是認清自己。」</span></p>
+      <p>認清自己。</p>
+      <p>林塵睜開眼，在星光下靜靜地思考。他這八個月，一直在想怎麼「突破」——怎麼讓靈氣凝聚，怎麼達到築基，怎麼讓那最後一步發生。但他從來沒有停下來想過：他真正想要的是什麼？他修仙，是為了什麼？</p>
+      <p>他閉目沉思，讓答案從心底最深處緩緩浮起。</p>
+      <p>不是為了長生，不是為了強大，不是為了站在所有人之上。他想起了那個在柴房裡苦讀的少年，想起了那個在深山裡獨力抵抗黑熊的孤身身影，想起了那口古井，那片靜謐的空地——他修仙，是因為他想知道這個世界更深處的秘密。他想知道，天地之間，除了生老病死、柴米油鹽，還有什麼。他想把那扇窗，推得更開一些。</p>
+      <p>那一刻，他的丹田深處，傳來了輕微的震動。</p>
+      <div class="chapter-end">※　※　※</div>
+    </div>
+  </article>
+
+  <!-- Chapter 10 -->
+  <article class="chapter" id="ch10" data-num="十">
+    <div class="chapter-header">
+      <p class="chapter-label">第十章</p>
+      <h2 class="chapter-title">破境而出</h2>
+      <div class="chapter-divider"></div>
+    </div>
+    <div class="chapter-body">
+      <p>那一夜，林塵沒有刻意去引導靈氣，沒有試圖去完成築基，他只是靜靜地坐在山頂，讓那個想法在心中慢慢展開，就像當年在古井旁初學觀息，只是靜靜地感受，不去強求。</p>
+      <p>靈氣從四面八方湧來，無聲無息，沒有衝擊，沒有壓迫，只是自然而然地向著他的丹田彙聚，如同千條溪流，最終匯入了同一個湖泊。林塵能感受到那種匯聚的過程，但他沒有干涉，只是靜靜地守護著那個過程，讓它按照自己的節奏進行。</p>
+      <p>天色從深黑漸漸泛起了魚肚白，晨星一顆顆隱去，第一縷陽光越過山頂，照在林塵的身上時，他的丹田深處，那一汪凝聚了許久的靈氣液體，終於在這一刻，開始發光。</p>
+      <p>那光芒從體內向外透出，先是淡淡的，如同燭光，隨即越來越亮，越來越強，最終在林塵的全身形成了一圈清澈的光環，在晨光中宛如一顆明珠。他的後天木靈根顯現出了本來的顏色——一種深邃的翠綠，帶著勃勃的生機，在那道光芒中跳動著。</p>
+      <p>他築基了。</p>
+      <p>那種感覺，林塵日後描述了許多次，卻始終覺得語言不足以表達。那不像是突破，更像是回歸。像是他體內本來就有這樣一個核心，只是長久以來被遺忘了，而在那個夜晚，他終於記起了它的存在，而它也終於記起了他。</p>
+      <p>築基之後，林塵的修為境界發生了根本性的蛻變。他能感受到天地靈氣的層次和流動方向，就像從前只能聽到聲音的人，忽然能夠看到聲波的形狀；他的靈識延伸出去，籠罩方圓數十丈的範圍，任何細微的動靜都難逃他的感知。</p>
+      <p>顧長老在第二天一早便察覺了弟子的變化，他出現在山頂，站在林塵面前打量了許久，神情複雜，最終只說了一句：<span class="dialogue">「你這後天靈根，築基之後的品質，已不輸許多先天靈根了。」</span></p>
+      <p>林塵行禮，沒有驕傲，只有平靜：<span class="dialogue">「多謝師父這一年的教導。」</span></p>
+      <p>顧長老輕嘆一聲，說：<span class="dialogue">「你以後的路，不會一帆風順，這世間嫉才妒能者，比你想象的多。但有一件事你要記住——」</span></p>
+      <p>他停頓了一下，抬頭看著天邊剛剛升起的朝陽：<span class="dialogue">「強者不是靠打倒別人成就的。真正的強者，是把自己的路，走得比任何人都寬。」</span></p>
+      <p>林塵站在山頂，望著那片在朝霞中燃燒的天空，心中有什麼東西緩緩地落了位。</p>
+      <p>他想起了青石鎮的那個清秋，古井旁的老人，燈下翻頁的寂靜夜晚，山中獨行的蒼茫，以及那一夜坐在山頂，仰望星斗的孤獨。那些一切，都是他的來路，都是這一刻的根。</p>
+      <p>長生之路，漫漫其修遠兮。前路有多少艱難險阻，他不知道；還有多少境界要突破，他也不知道。但他知道一件事：他已經踏上了這條路，而且，他不會回頭。</p>
+      <p>林塵深吸一口氣，感受著築基後那個煥然一新的自己，然後緩緩轉過身，面向山下的宗門，面向更遠處那個廣闊的天地。</p>
+      <p>他的修仙之路，才剛剛開始。</p>
+      <div class="scene-break">——　凡塵問道　未完待續　——</div>
+    </div>
+  </article>
+
+</main>
+
+<button class="back-top" id="backTop" onclick="window.scrollTo({top:0,behavior:'smooth'})">▲</button>
+
+<script>
+  function scrollTo(id) {
+    document.getElementById(id)?.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+  window.addEventListener('scroll', () => {
+    const btn = document.getElementById('backTop');
+    btn.classList.toggle('visible', window.scrollY > 600);
+  });
+</script>
+</body>
+</html>
